@@ -55,7 +55,7 @@ jobs:
                id: version
                run: echo "version=0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT" 
              - name: package the app
-               run: tar -czvf "${APP_NAME}-${steps.version.outputs.version}.tar.gz" -- *
+               run: tar -czvf "${APP_NAME}-${{steps.version.outputs.version}}.tar.gz" -- *
              - name: Upload artifact
                uses: actions/upload-artifact@v4
                with:
