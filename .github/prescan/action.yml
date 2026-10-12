@@ -1,49 +1,68 @@
 
 name: Custom Pre-Scan
-description: Git leaks, TruffleHog, and Trivy filesystem security scans
+description: Install and run Git leak, TruffleHog, and Trivy scans
 
 runs:
   using: composite
   steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        sudo apt-get update
+        # sudo apt-get install -y curl git ca-certificates
+
+        # Install TruffleHog
+        curl -sSfL \
+          https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh \
+          | sudo sh -s -- -b /usr/local/bin v3.90.8
+
+        # Install Trivy
+        curl -sfL \
+          https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+          | sudo sh -s -- -b /usr/local/bin v0.69.3
+
+        trufflehog --version
+        trivy --version
+
     - name: Git Leaks Scan
       shell: bash
       run: |
-        echo "Starting Git leaks scan..."
+        set -euo pipefail
+
+        echo "Running basic Git leak scan..."
 
         if git grep -n -I -E \
           '(password|passwd|secret|api[_-]?key|access[_-]?token)[[:space:]]*[:=][[:space:]]*["'\''][^"'\'']{4,}["'\'']' \
           -- . ':!*.md'; then
-          echo "::error::Potential hardcoded secret detected!"
+          echo "::error::Potential hardcoded secret detected."
           exit 1
         else
-          status=$?
-          if [ "$status" -ne 1 ]; then
-            echo "::error::Git leaks scan failed to execute."
-            exit "$status"
+          rc=$?
+          if [ "$rc" -ne 1 ]; then
+            echo "::error::Git grep failed."
+            exit "$rc"
           fi
-          echo "Git leaks scan passed."
+          echo "No matching patterns found."
         fi
 
     - name: TruffleHog Scan
       shell: bash
       run: |
-        echo "Starting TruffleHog scan..."
+        set -euo pipefail
 
         trufflehog git file://. \
-          --only-verified \
+          --results=verified,unknown \
           --fail
-
-        echo "TruffleHog scan passed."
 
     - name: Trivy Filesystem Scan
       shell: bash
       run: |
-        echo "Starting Trivy filesystem scan..."
+        set -euo pipefail
 
         trivy fs \
           --scanners vuln,secret,misconfig \
           --severity HIGH,CRITICAL \
           --exit-code 1 \
           .
-
-        echo "Trivy filesystem scan passed."
