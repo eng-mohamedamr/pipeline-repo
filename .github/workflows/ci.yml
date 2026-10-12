@@ -92,26 +92,27 @@ jobs:
         outputs:
             version: ${{ steps.version.outputs.version }}        
     verify:
-        runs-on: ubuntu-latest
-        timeout-minutes: 3
-        steps:
+      runs-on: ubuntu-latest
+      timeout-minutes: 3
 
-                - uses : actions/download-artifact@v4
-                  with:
-                    name: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}
-                    path: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}.tar.gz
-                - name: Extract package
-                  env:
-                    VERSION: ${{ needs.package.outputs.version }}
-                  run: |
-                    mkdir -p extracted
-                    tar -xzf "${APP_NAME}-${VERSION}.tar.gz" -C extracted
+      steps:
+        - uses: actions/download-artifact@v4
+          with:
+            name: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}
+            path: downloaded
 
-                - name: Verify packaged application
-                  working-directory: extracted
-                  run: |
-                    python3 -c "from temperature import celsius_to_fahrenheit as c; assert c(100) == 212; print('Package OK')"
-        needs: package
+        - name: Extract package
+          env:
+            VERSION: ${{ needs.package.outputs.version }}
+          run: |
+            mkdir -p extracted
+            tar -xzf "downloaded/${APP_NAME}-${VERSION}.tar.gz" -C extracted
+
+        - name: Verify packaged application
+          working-directory: extracted
+          run: |
+            python3 -c "from temperature import celsius_to_fahrenheit as c; assert c(100) == 212; print('Package OK')"
+      needs: package
                                 
     
     report:
