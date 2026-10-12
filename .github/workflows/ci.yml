@@ -76,21 +76,37 @@ jobs:
                   run: ls -l
         needs: package
                      
+    
     report:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Print Upstream Job Statuses
-              run: |
-                echo "====================================="
-                echo "       UPSTREAM JOB RESULTS          "
-                echo "====================================="
-                echo " Test Job Status      : ${{ needs.test.result }}"
-                echo "package Job Status    : ${{ needs.package.result }}"
-                echo "Verify Job Status     : ${{ needs.verify.result }}"
-                echo "====================================="
-        if: always() 
-        needs: 
-            - package
-            - test
+      if: ${{ always() }}
+      needs: 
+        - test
+        - package
+      runs-on: ubuntu-latest
 
-                
+      steps:
+        - name: Write workflow summary
+          env:
+            APP_NAME: ${{ env.APP_NAME }}
+            VERSION: ${{ needs.package.outputs.version }}
+            COMMIT_SHA: ${{ github.sha }}
+            EVENT_NAME: ${{ github.event_name }}
+            TEST_RESULT: ${{ needs.test.result }}
+            PACKAGE_RESULT: ${{ needs.package.result }}
+
+          run: |
+                {              # Write a Markdown table to the GitHub Actions job summary
+
+                echo "## Workflow Report"
+                echo ""
+                echo "| Field | Value |"
+                echo "|---|---|"
+                echo "| App name | ${APP_NAME} |"
+                echo "| Version | ${VERSION} |"
+                echo "| Commit | ${COMMIT_SHA} |"
+                echo "| Event | ${EVENT_NAME} |"
+                echo "| Test result | ${TEST_RESULT} |"
+                echo "| Package result | ${PACKAGE_RESULT} |"
+                } >> "$GITHUB_STEP_SUMMARY"
+
+                  
