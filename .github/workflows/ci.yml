@@ -93,6 +93,7 @@ jobs:
             EVENT_NAME: ${{ github.event_name }}
             TEST_RESULT: ${{ needs.test.result }}
             PACKAGE_RESULT: ${{ needs.package.result }}
+            VERIFY_RESULT: ${{ needs.verify.result }}
 
           run: |
                 {              # Write a Markdown table to the GitHub Actions job summary
@@ -107,6 +108,8 @@ jobs:
                 echo "| Event | ${EVENT_NAME} |"
                 echo "| Test result | ${TEST_RESULT} |"
                 echo "| Package result | ${PACKAGE_RESULT} |"
+                echo "| Report generated at | $(date) |"
+                echo "| verify result | ${VERIFY_RESULT} |"
                 } >> "$GITHUB_STEP_SUMMARY"
 
                   
