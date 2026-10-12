@@ -35,7 +35,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 3
         steps:
-             - uses: actions/checkout@v3
+             - uses: actions/checkout@v7
              - uses: actions/setup-python@v4
                with:
                  python-version: ${{ inputs.python-version }}
@@ -50,7 +50,7 @@ jobs:
         if: ${{github.event_name != 'workflow_dispatch' ||inputs.create-package == true}}
         
         steps:
-             - uses: actions/checkout@v3 
+             - uses: actions/checkout@v7 
              - name: calculate the version
                id: version
                run: echo "version=0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT" 
