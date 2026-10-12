@@ -58,6 +58,14 @@ jobs:
                   path: reports/junit.xml
                   retention-days: 5
                   if-no-files-found: warn
+             - name: Debug Sonar context
+               run: |
+                echo "Event: $GITHUB_EVENT_NAME"
+                echo "Ref: $GITHUB_REF"
+                echo "SHA: $GITHUB_SHA"
+                git branch --show-current
+                git remote -v
+
              - name: SonarQube Scan
                if: github.event_name == 'push' && github.ref == 'refs/heads/main'
                uses: SonarSource/sonarqube-scan-action@v6
