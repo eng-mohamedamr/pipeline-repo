@@ -59,6 +59,7 @@ jobs:
                   retention-days: 5
                   if-no-files-found: warn
              - name: SonarQube Scan
+               if: github.event_name == 'push' && github.ref == 'refs/heads/main'
                uses: SonarSource/sonarqube-scan-action@v6
                env:
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

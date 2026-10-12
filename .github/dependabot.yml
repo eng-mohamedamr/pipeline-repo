@@ -5,7 +5,3 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
-groups:
-  - name: "github-actions"
-    patterns:
-      - "actions/*"
