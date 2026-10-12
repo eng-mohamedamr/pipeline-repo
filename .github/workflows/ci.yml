@@ -93,7 +93,7 @@ jobs:
                     VERSION: ${{ needs.package.outputs.version }}
                   run: |
                     mkdir -p extracted
-                    tar -xzf "dist/temperature-${VERSION}.tar.gz" -C extracted
+                    tar -xzf "${APP_NAME}-${VERSION}.tar.gz" -C extracted
 
                 - name: Verify packaged application
                   working-directory: extracted
