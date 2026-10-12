@@ -50,7 +50,8 @@ jobs:
         if: ${{github.event_name != 'workflow_dispatch' ||inputs.create-package == true}}
         
         steps:
-             - uses: actions/checkout@v3
+             - uses: actions/checkout@v3  
+
              - name: calculate the version
                id: version
                run: echo "version=0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT" 
@@ -59,8 +60,8 @@ jobs:
              - name: Upload artifact
                uses: actions/upload-artifact@v4
                with:
-                name: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}
-                path: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}.tar.gz
+                name: ${{ env.APP_NAME }}-${{ steps.version.outputs.version }}
+                path: ${{ env.APP_NAME }}-${{ steps.version.outputs.version }}.tar.gz
                 needs: test
         outputs:
           version: ${{ steps.version.outputs.version }}        
