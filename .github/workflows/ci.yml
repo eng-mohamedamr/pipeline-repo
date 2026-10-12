@@ -1,6 +1,4 @@
-
 name: Day-2
-
 run-name: ${{ github.actor }}
 
 on:
@@ -40,7 +38,10 @@ jobs:
                with:
                  python-version: ${{ inputs.python-version }}
              - name: test the app
-               run: pytest -v
+               run: |
+                 pip install pytest
+                 pytest -v
+
     package:
         runs-on: ubuntu-latest
         steps:
