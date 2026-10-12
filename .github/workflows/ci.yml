@@ -47,8 +47,9 @@ jobs:
         steps:
              - uses: actions/checkout@v3
              - name: package the app
-               run: tar -czvf app-backup.tar.gz .
+               run: tar --exclude=app-backup.tar.gz -czvf app-backup.tar.gz .
         needs: test
+
     verify:
         runs-on: ubuntu-latest
         steps:
