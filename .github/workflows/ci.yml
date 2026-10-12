@@ -72,7 +72,7 @@ jobs:
                   with:
                     name: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}
                     path: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}.tar.gz
-                - name: verify the app
+                - name: verify the package
                   run: ls -l
         needs: package
                      
@@ -96,7 +96,7 @@ jobs:
             VERIFY_RESULT: ${{ needs.verify.result }}
 
           run: |
-                {              # Write a Markdown table to the GitHub Actions job summary
+                { 
 
                 echo "## Workflow Report"
                 echo ""
