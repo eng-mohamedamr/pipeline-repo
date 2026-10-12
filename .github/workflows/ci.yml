@@ -39,11 +39,26 @@ jobs:
              - uses: actions/setup-python@v4
                with:
                  python-version: ${{ inputs.python-version }}
+                 cache: pip
+                 cache-dependency-path: requirements-dev.txt
+              
           
              - name: install the app
                run:  pip install -r requirements-dev.txt
-             - name: test the app
-               run: pytest -v
+
+             - name: Run tests and generate JUnit report
+               run: |
+                  mkdir -p reports
+                  pytest -v --junitxml=reports/junit.xml
+             - name: Upload test report
+               if: ${{ always() }}
+               uses: actions/upload-artifact@v4
+               with:
+                  name: test-report
+                  path: reports/junit.xml
+                  retention-days: 5
+                  if-no-files-found: warn
+                
     package:
         runs-on: ubuntu-latest
         timeout-minutes: 3
@@ -68,14 +83,24 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 3
         steps:
+
                 - uses : actions/download-artifact@v4
                   with:
                     name: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}
                     path: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}.tar.gz
-                - name: verify the package
-                  run: ls -l
+                - name: Extract package
+                  env:
+                    VERSION: ${{ needs.package.outputs.version }}
+                  run: |
+                    mkdir -p extracted
+                    tar -xzf "dist/temperature-${VERSION}.tar.gz" -C extracted
+
+                - name: Verify packaged application
+                  working-directory: extracted
+                  run: |
+                    python3 -c "from temperature import celsius_to_fahrenheit as c; assert c(100) == 212; print('Package OK')"
         needs: package
-                     
+                                
     
     report:
       if: ${{ always() }}
@@ -93,8 +118,6 @@ jobs:
             EVENT_NAME: ${{ github.event_name }}
             TEST_RESULT: ${{ needs.test.result }}
             PACKAGE_RESULT: ${{ needs.package.result }}
-            VERIFY_RESULT: ${{ needs.verify.result }}
-
           run: |
                 { 
 
@@ -109,7 +132,6 @@ jobs:
                 echo "| Test result | ${TEST_RESULT} |"
                 echo "| Package result | ${PACKAGE_RESULT} |"
                 echo "| Report generated at | $(date) |"
-                echo "| verify result | ${VERIFY_RESULT} |"
                 } >> "$GITHUB_STEP_SUMMARY"
 
                   
