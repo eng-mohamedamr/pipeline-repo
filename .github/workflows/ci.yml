@@ -47,7 +47,7 @@ jobs:
         steps:
              - uses: actions/checkout@v3
              - name: package the app
-               run: tar -czvf /tmp/app-backup.tar.gz .
+               run: tar -czvf app-backup.tar.gz requirements.txt temperature.py test_temperature.py
         needs: test
 
     verify:
