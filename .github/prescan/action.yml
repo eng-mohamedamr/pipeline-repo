@@ -52,7 +52,7 @@ runs:
       run: |
         set -euo pipefail
 
-        /usr/local/bin/trufflehog git file://. \
+        /usr/local/bin/trufflehog --no-update git file://. \
           --results=verified,unknown \
           --fail
 
