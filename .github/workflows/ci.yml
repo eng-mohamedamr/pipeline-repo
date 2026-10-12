@@ -71,7 +71,10 @@ jobs:
                uses: SonarSource/sonarqube-scan-action@v6
                env:
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                
+               with:
+                  args: >
+                    -Dsonar.verbose=true
+                              
     package:
         runs-on: ubuntu-latest
         timeout-minutes: 3
