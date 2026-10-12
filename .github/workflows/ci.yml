@@ -1,0 +1,76 @@
+
+name: Day-2
+
+run-name: ${{ github.actor }}
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+    inputs:
+      python-version:
+        default: '3.13'
+        type: choice
+        options:
+          - '3.13'
+          - '3.12'
+
+      create-package:
+        required: true
+        default: true
+        type: boolean
+
+  schedule:
+    - cron: '0 7 * * 1'
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+             - uses: actions/checkout@v3
+             - uses: actions/setup-python@v4
+               with:
+                 python-version: ${{ inputs.python-version }}
+             - name: test the app
+               run: pytest -v
+    package:
+        runs-on: ubuntu-latest
+        steps:
+             - uses: actions/checkout@v3
+             - name: package the app
+               run: tar -czvf app-backup.tar.gz .
+        needs: test
+    verify:
+        runs-on: ubuntu-latest
+        steps:
+                - uses: actions/checkout@v3
+                - name: verify the app
+                  run: ls -l
+        needs: package
+                     
+    report:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Print Upstream Job Statuses
+              run: |
+                echo "====================================="
+                echo "       UPSTREAM JOB RESULTS          "
+                echo "====================================="
+                echo " Test Job Status      : ${{ needs.test.result }}"
+                echo "package Job Status    : ${{ needs.package.result }}"
+                echo "Verify Job Status     : ${{ needs.verify.result }}"
+                echo "====================================="
+        if: always() 
+        needs: 
+            - package
+            - test
+
+                
