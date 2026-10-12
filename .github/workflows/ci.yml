@@ -1,6 +1,7 @@
 name: Day-2
 run-name: ${{ github.actor }}
-
+env:
+  APP_NAME: temperature
 on:
   push:
     branches:
@@ -32,36 +33,45 @@ on:
 jobs:
     test:
         runs-on: ubuntu-latest
+        timeout-minutes: 3
         steps:
              - uses: actions/checkout@v3
              - uses: actions/setup-python@v4
                with:
                  python-version: ${{ inputs.python-version }}
+          
+             - name: install the app
+               run:  pip install -r requirements-dev.txt
              - name: test the app
-               run: |
-                 pip install -r requirements-dev.txt
-                 pytest -v
-
+               run: pytest -v
     package:
         runs-on: ubuntu-latest
+        timeout-minutes: 3
+        if: ${{github.event_name != 'workflow_dispatch' ||inputs.create-package == true}}
+        
         steps:
              - uses: actions/checkout@v3
+             - name: calculate the version
+               id: version
+               run: echo "version=0.1.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT" 
              - name: package the app
-               run: tar -czvf app-backup.tar.gz -- *
+               run: tar -czvf "${APP_NAME}-${VERSION}.tar.gz" -- *
              - name: Upload artifact
                uses: actions/upload-artifact@v4
                with:
-                name: app-backup
-                path: app-backup.tar.gz
+                name: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}
+                path: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}.tar.gz
                 needs: test
-
+        outputs:
+          version: ${{ steps.version.outputs.version }}        
     verify:
         runs-on: ubuntu-latest
+        timeout-minutes: 3
         steps:
                 - uses : actions/download-artifact@v4
                   with:
-                    name: app-backup
-                    path: app-backup.tar.gz
+                    name: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}
+                    path: ${{ env.APP_NAME }}-${{ needs.package.outputs.version }}.tar.gz
                 - name: verify the app
                   run: ls -l
         needs: package

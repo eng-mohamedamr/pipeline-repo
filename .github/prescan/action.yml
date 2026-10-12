@@ -1,0 +1,30 @@
+
+name: Pre-build Security Scan
+description: Scan source code for leaked secrets and vulnerabilities
+
+runs:
+  using: composite
+  steps:
+    # 1. Detect leaked secrets with Gitleaks
+    - name: Gitleaks scan
+      uses: gitleaks/gitleaks-action@v3
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    # 2. Detect credentials with TruffleHog
+    - name: TruffleHog scan
+      uses: trufflesecurity/trufflehog@main
+      with:
+        extra_args: --results=verified,unknown
+
+    # 3. Scan files, dependencies and configuration with Trivy
+    - name: Trivy filesystem scan
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        scan-type: fs
+        scan-ref: .
+        scanners: vuln,secret,misconfig
+        severity: CRITICAL,HIGH
+        ignore-unfixed: true
+        format: table
+        exit-code: '1'
