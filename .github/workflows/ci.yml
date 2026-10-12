@@ -39,7 +39,7 @@ jobs:
                  python-version: ${{ inputs.python-version }}
              - name: test the app
                run: |
-                 pip install pytest
+                 pip install requirements-dev.txt
                  pytest -v
 
     package:
@@ -47,7 +47,7 @@ jobs:
         steps:
              - uses: actions/checkout@v3
              - name: package the app
-               run: tar -czvf app-backup.tar.gz requirements.txt temperature.py test_temperature.py
+               run: tar -czvf app-backup.tar.gz requirements-dev.txt temperature.py test_temperature.py
         needs: test
 
     verify:
