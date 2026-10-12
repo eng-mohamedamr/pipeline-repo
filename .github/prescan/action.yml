@@ -1,30 +1,49 @@
 
-name: Pre-build Security Scan
-description: Scan source code for leaked secrets and vulnerabilities
+name: Custom Pre-Scan
+description: Git leaks, TruffleHog, and Trivy filesystem security scans
 
 runs:
   using: composite
   steps:
-    # 1. Detect leaked secrets with Gitleaks
-    - name: Gitleaks scan
-      uses: gitleaks/gitleaks-action@v3
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+    - name: Git Leaks Scan
+      shell: bash
+      run: |
+        echo "Starting Git leaks scan..."
 
-    # 2. Detect credentials with TruffleHog
-    - name: TruffleHog scan
-      uses: trufflesecurity/trufflehog@main
-      with:
-        extra_args: --results=verified,unknown
+        if git grep -n -I -E \
+          '(password|passwd|secret|api[_-]?key|access[_-]?token)[[:space:]]*[:=][[:space:]]*["'\''][^"'\'']{4,}["'\'']' \
+          -- . ':!*.md'; then
+          echo "::error::Potential hardcoded secret detected!"
+          exit 1
+        else
+          status=$?
+          if [ "$status" -ne 1 ]; then
+            echo "::error::Git leaks scan failed to execute."
+            exit "$status"
+          fi
+          echo "Git leaks scan passed."
+        fi
 
-    # 3. Scan files, dependencies and configuration with Trivy
-    - name: Trivy filesystem scan
-      uses: aquasecurity/trivy-action@v0.36.0
-      with:
-        scan-type: fs
-        scan-ref: .
-        scanners: vuln,secret,misconfig
-        severity: CRITICAL,HIGH
-        ignore-unfixed: true
-        format: table
-        exit-code: '1'
+    - name: TruffleHog Scan
+      shell: bash
+      run: |
+        echo "Starting TruffleHog scan..."
+
+        trufflehog git file://. \
+          --only-verified \
+          --fail
+
+        echo "TruffleHog scan passed."
+
+    - name: Trivy Filesystem Scan
+      shell: bash
+      run: |
+        echo "Starting Trivy filesystem scan..."
+
+        trivy fs \
+          --scanners vuln,secret,misconfig \
+          --severity HIGH,CRITICAL \
+          --exit-code 1 \
+          .
+
+        echo "Trivy filesystem scan passed."

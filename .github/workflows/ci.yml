@@ -31,6 +31,23 @@ on:
   schedule:
     - cron: '0 7 * * 1'
 jobs:
+    prescan:
+        runs-on: ubuntu-latest
+
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+              fetch-depth: 0
+
+          - name: Install scanning tools
+            run: |
+              # Install TruffleHog and Trivy here,
+              # or use a runner where they are preinstalled.
+              echo "Ensure trufflehog and trivy are installed."
+
+          - name: Run Custom Pre-Scan
+            uses: ./.github/actions/prescan
     test:
         runs-on: ubuntu-latest
         timeout-minutes: 3
