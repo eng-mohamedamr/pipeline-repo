@@ -23,7 +23,7 @@ runs:
           https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
           | sudo sh -s -- -b /usr/local/bin v0.69.3
 
-        trufflehog --version
+        /usr/local/bin/trufflehog --version
         trivy --version
 
     - name: Git Leaks Scan
@@ -52,7 +52,7 @@ runs:
       run: |
         set -euo pipefail
 
-        trufflehog git file://. \
+        /usr/local/bin/trufflehog git file://. \
           --results=verified,unknown \
           --fail
 
