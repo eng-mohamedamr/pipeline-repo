@@ -47,7 +47,7 @@ jobs:
               echo "Ensure trufflehog and trivy are installed."
 
           - name: Run Custom Pre-Scan
-            uses: ./.github/actions/prescan
+            uses: ./.github/prescan/action.yml
     test:
         runs-on: ubuntu-latest
         timeout-minutes: 3
