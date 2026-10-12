@@ -93,10 +93,9 @@ jobs:
                     VERSION: ${{ needs.package.outputs.version }}
                   run: |
                     mkdir -p extracted
-                    tar -xzf "${APP_NAME}-${VERSION}.tar.gz" -C extracted
+                    tar -xzf "${APP_NAME}-${VERSION}.tar.gz" 
 
                 - name: Verify packaged application
-                  working-directory: extracted
                   run: |
                     python3 -c "from temperature import celsius_to_fahrenheit as c; assert c(100) == 212; print('Package OK')"
         needs: package
