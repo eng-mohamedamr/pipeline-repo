@@ -39,7 +39,7 @@ jobs:
                  python-version: ${{ inputs.python-version }}
              - name: test the app
                run: |
-                 pip install requirements-dev.txt
+                 pip install -r requirements-dev.txt
                  pytest -v
 
     package:
